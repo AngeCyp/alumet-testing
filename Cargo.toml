@@ -5,6 +5,7 @@ members = [
     "alumet-api-dynamic",
     "alumet-api-macros",
     "app-agent",
+    "plugin-aggregation",
     "plugin-csv",
     "plugin-cgroupv2",
     "plugin-energy-attribution",
