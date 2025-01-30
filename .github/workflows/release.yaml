@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install createrepo
-        run: sudo apt-get update && sudo apt-get install -y createrepo
+        run: sudo apt-get update && sudo apt-get install -y createrepo_c
 
       - name: Setup gh-pages branch
         run: |
@@ -44,7 +44,7 @@ jobs:
       - name: Create repository metadata
         run: |
           cd docs
-          createrepo .
+          createrepo_c .
 
       - name: Commit and push changes
         run: |
