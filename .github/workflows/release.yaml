@@ -7,7 +7,7 @@ on:
 
 jobs:
   gather-informations:
-    uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci%2Fcreate-rpm-package
+    uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci/create-rpm-package
     with:
       target-architecture: x86_64
       build-version: 0.6.1
