@@ -46,7 +46,7 @@ jobs:
 
       - name: Move RPM files to docs directory
         run: |
-          find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs {} +
+          find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
           find ./docs/rpm -type d -empty -delete
 
       - name: Create repository metadata
@@ -84,4 +84,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          rpms/**/*.rpm
+          rpm/**/*.rpm
