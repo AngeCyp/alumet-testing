@@ -22,7 +22,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
+      - name: Install createrepo
+        run: sudo apt-get update && sudo apt-get install -y createrepo-c
+        
+      - name: Setup gh-pages branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout gh-pages || git checkout --orphan gh-pages
+          git pull origin gh-pages
+            
       - name: Set up folder
         run: |
           rm -rf docs
@@ -36,19 +46,9 @@ jobs:
 
       - name: Move RPM files to docs directory
         run: |
-          find ./docs -mindepth 2 -type f -exec mv -t ./docs {} +
-          find ./docs -type d -empty -delete
+          find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs {} +
+          find ./docs/rpm -type d -empty -delete
 
-      - name: Install createrepo
-        run: sudo apt-get update && sudo apt-get install -y createrepo-c
-        
-      - name: Setup gh-pages branch
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout gh-pages || git checkout --orphan gh-pages
-          git pull origin gh-pages
-        
       - name: Create repository metadata
         run: |
           cd docs/rpm
