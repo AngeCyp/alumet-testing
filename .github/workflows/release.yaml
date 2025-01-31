@@ -31,7 +31,8 @@ jobs:
       - name: Download RPM artifact
         uses: actions/download-artifact@v4
         with:
-          path: ./docs
+          path: ./docs/rpm
+          pattern: '**/*.rpm' 
 
       - name: Move RPM files to docs directory
         run: |
@@ -50,7 +51,7 @@ jobs:
         
       - name: Create repository metadata
         run: |
-          cd docs
+          cd docs/rpm
           createrepo_c .
 
       - name: Commit and push changes
@@ -61,48 +62,26 @@ jobs:
       
       - name: Upload static files as artifact
         id: deployment
-        uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
+        uses: actions/upload-pages-artifact@v3 
         with:
           path: docs/
       
+  attach-artifacts:
+    needs: gather-informations
+    runs-on: ubuntu-latest
 
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
+    - name: Download RPM artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '**/*.rpm'
+        path: ./rpm
 
-
-
-
-
-
-  # attach-artifacts:
-  #   needs: gather-informations
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v4
-
-  #   - name: Download RPM artifact
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: rpm-package
-  #       path: ./rpms
-
-  #   - name: Get release information
-  #     id: get_release
-  #     uses: actions/github-script@v7
-  #     with:
-  #       script: |
-  #         const release_id = context.payload.release.id;
-  #         return { release_id };
-
-  #   - name: Upload RPM to release
-  #     uses: actions/upload-release-asset@v1
-  #     with:
-  #       upload_url: ${{ github.event.release.upload_url }}
-  #       asset_path: ./rpms/*.rpm
-  #       asset_name: rpm-package.rpm
-  #       asset_content_type: application/x-rpm
-  #       release_id: ${{ steps.get_release.outputs.release_id }}
-  #       github_token: ${{ secrets.GITHUB_TOKEN }}
-
-    
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          rpms/**/*.rpm
