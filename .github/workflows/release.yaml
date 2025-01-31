@@ -33,6 +33,11 @@ jobs:
         with:
           path: ./docs
 
+      - name: Move RPM files to docs directory
+        run: |
+          find ./docs -mindepth 2 -type f -exec mv -t ./docs {} +
+          find ./docs -type d -empty -delete
+
       - name: Install createrepo
         run: sudo apt-get update && sudo apt-get install -y createrepo-c
         
