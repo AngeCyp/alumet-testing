@@ -2,15 +2,27 @@ name: "Create the release"
 
 on:
   release:
-    types: ["created", "unpublished"]
-  push:
+    types: ["created", "published"]
 
 jobs:
   gather-informations:
+    runs-on: ubuntu-latest
+    outputs:
+      clean_tag: ${{ steps.get_tag.outputs.clean_tag }}
+    steps:
+      - name: Get Release Tag
+        id: get_tag
+        run: |
+          TAG_NAME=${{ github.event.release.tag_name }}
+          CLEAN_TAG=${TAG_NAME#v}
+          echo "::set-output name=clean_tag::$CLEAN_TAG"
+
+  create-rpm:
+    needs: gather-informations
     uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci/create-rpm-package
     with:
       target-architecture: x86_64
-      build-version: 0.6.1
+      build-version: ${{ needs.gather-informations.outputs.clean_tag }}
       release-version: 1
 
 
