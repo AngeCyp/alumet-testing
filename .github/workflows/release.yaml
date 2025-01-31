@@ -2,7 +2,7 @@ name: "Create the release"
 
 on:
   release:
-    types: ["created"]
+    types: ["created", "unpublished"]
   push:
 
 jobs:
