@@ -27,7 +27,7 @@ jobs:
 
 
   publish:
-    needs: gather-informations
+    needs: create-rpm
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -80,7 +80,7 @@ jobs:
           path: docs/
       
   attach-artifacts:
-    needs: gather-informations
+    needs: create-rpm
     runs-on: ubuntu-latest
 
     steps:
