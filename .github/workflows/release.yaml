@@ -53,6 +53,7 @@ jobs:
         run: |
           cd docs/rpm
           createrepo_c .
+          cd ../..
 
       - name: Commit and push changes
         run: |
