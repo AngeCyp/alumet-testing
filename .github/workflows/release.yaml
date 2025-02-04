@@ -29,7 +29,7 @@ jobs:
             const regex = /([0-9.]{3,})-([0-9]+)/;
             const match = firstAsset.match(regex);
             console.log(`Match: ${match}`);
-            const release = match ? match[2] : '';
+            let release = match ? match[2] : '';
             if (release !== '') {
               release = (parseInt(release) + 1).toString();
             }
