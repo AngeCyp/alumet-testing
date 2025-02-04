@@ -2,7 +2,8 @@ name: "Create the release"
 
 on:
   release:
-    types: ["created", "published"]
+    types: ["created", "published", "prereleased"]
+  workflow_dispatch:
 
 jobs:
   gather-informations:
@@ -10,10 +11,21 @@ jobs:
     outputs:
       tag: ${{ steps.get_tag.outputs.TAG }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: 'true'
+
       - name: Get Release Tag
         id: get_tag
         run: |
-          TAG_NAME=${{ github.event.release.tag_name }}
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            // Retrieve last tag of last release
+            TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
+          else
+            // Use the tag passed with the release
+            TAG_NAME=${{ github.event.release.tag_name }}
+          fi
           CLEAN_TAG=${TAG_NAME#v}
           echo "TAG=$CLEAN_TAG" >> $GITHUB_OUTPUT
 
