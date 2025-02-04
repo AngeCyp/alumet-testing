@@ -10,11 +10,30 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.get_tag.outputs.TAG }}
+      release: ${{ steps.get_release.outputs.RELEASE }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-tags: 'true'
+
+      - name: Get Latest Release and List Artifacts
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const latestRelease = await github.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+  
+            const assets = latestRelease.data.assets.map(asset => asset.name);
+            console.log("Artifacts attached to the latest release:");
+            console.log(assets.join("\n"));
+  
+            core.setOutput("assets", assets.join(", "));
+            
+      - name: Echo Artifacts
+        run: echo "The artifacts attached to the latest release are: ${{ steps.get_latest_release.outputs.assets }}"
 
       - name: Get Release Tag
         id: get_tag
@@ -22,13 +41,15 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             // Retrieve last tag of last release
             TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
+            CLEAN_TAG=${TAG_NAME#v}
+            echo "TAG=$CLEAN_TAG" >> $GITHUB_OUTPUT
           else
             // Use the tag passed with the release
             TAG_NAME=${{ github.event.release.tag_name }}
+            CLEAN_TAG=${TAG_NAME#v}
+            echo "TAG=$CLEAN_TAG" >> $GITHUB_OUTPUT
           fi
-          CLEAN_TAG=${TAG_NAME#v}
-          echo "TAG=$CLEAN_TAG" >> $GITHUB_OUTPUT
-
+          
   create-rpm:
     needs: gather-informations
     uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci/create-rpm-package
