@@ -13,7 +13,8 @@ jobs:
       release: ${{ steps.get_tags.outputs.RELEASE }}
     steps:
       - name: Get Latest Release and List Artifacts
-        if: ${{ github.event_name == 'workflow_dispatch' }}  
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_latest_release  
         uses: actions/github-script@v6
         with:
           script: |
