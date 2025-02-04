@@ -30,7 +30,7 @@ jobs:
             const firstAsset = assets[0]; // Récupère le premier élément de la liste
             console.log("First artifact attached to the latest release:");
             console.log(firstAsset);
-            const regex = "/([0-9.]{3,})-([0-9]+)"
+            const regex = /([0-9.]{3,})-([0-9]+)/;
             const match = firstAsset.match(regex);
             console.log(`Match: ${match}`);
             const numberX = match ? match[1] : 'Not found';
