@@ -48,7 +48,7 @@ jobs:
           fetch-tags: 'true'
 
       - name: Get version and release Tag
-        id: get_tag
+        id: get_tags
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             RAW_VERSION=${{ steps.get_latest_release.outputs.version }}
