@@ -32,6 +32,7 @@ jobs:
             console.log(firstAsset);
             const regex = "/([0-9.]{3,})-([0-9]+)"
             const match = firstAsset.match(regex);
+            console.log(`Match: ${match}`);
             const numberX = match ? match[1] : 'Not found';
             console.log(`Extracted number X: ${numberX}`);
             core.setOutput("first_asset", firstAsset);
