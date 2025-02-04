@@ -33,7 +33,8 @@ jobs:
             core.setOutput("assets", assets.join(", "));
             
       - name: Echo Artifacts
-        run: echo "The artifacts attached to the latest release are: ${{ steps.get_latest_release.outputs.assets }}"
+        run: |
+          echo "The artifacts attached to the latest release are: ${{ steps.get_latest_release.outputs.assets }}"
 
       - name: Get Release Tag
         id: get_tag
