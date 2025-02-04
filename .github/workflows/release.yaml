@@ -140,7 +140,50 @@ jobs:
         path: ./rpm
 
     - name: Release
+      if: ${{ github.event_name != 'workflow_dispatch' }}
       uses: softprops/action-gh-release@v2
       with:
         files: |
           rpm/**/*.rpm
+
+    - name: Get Latest Release and Delete Old Artifacts
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      id: get_latest_release_and_delete_old_artifacts
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const latestRelease = await github.rest.repos.getLatestRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+
+          let id = latestRelease.data.id;
+
+          const assets = await github.rest.repos.listReleaseAssets({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: id
+          });
+
+          for (const asset of assets.data) {
+            await github.rest.repos.deleteReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              asset_id: asset.id
+            });
+          }
+
+          core.setOutput("release_id", id);
+
+    - name: Upload New Artifacts
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        for file in ./rpm/*; do
+          echo "Uploading $file..."
+          gh api \
+            --method POST \
+            --header "Content-Type: $(file -b --mime-type $file)" \
+            --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            --data-binary @$file \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_id }}/assets?name=$(basename $file)"
+        done
