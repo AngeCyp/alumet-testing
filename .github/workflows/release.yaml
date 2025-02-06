@@ -186,6 +186,9 @@ jobs:
           core.setOutput("release_tag", tag);
 
     - name: Upload New Artifacts
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release upload ${{ env.release_tag }} rpm/*
+
         
