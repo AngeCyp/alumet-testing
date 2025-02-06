@@ -189,5 +189,5 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        find rpm -type f -exec gh release upload --generate-notes ${{ steps.get_latest_release.outputs.release_tag }} {} \;
+        find rpm -type f -exec gh release upload ${{ steps.get_latest_release.outputs.release_tag }} {} \;
         
