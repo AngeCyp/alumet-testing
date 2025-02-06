@@ -24,17 +24,24 @@ jobs:
             });
   
             const assets = latestRelease.data.assets.map(asset => asset.name);
-            const firstAsset = assets[0]; // Récupère le premier élément de la liste
-            console.log("First artifact attached to the latest release:");
-            console.log(firstAsset);
-            const regex = /([0-9.]{3,})-([0-9]+)/;
-            const match = firstAsset.match(regex);
-            console.log(`Match: ${match}`);
-            let release = match ? match[2] : '';
-            if (release !== '') {
-              release = (parseInt(release) + 1).toString();
-            }
-            const version = match ? match[1] : '';
+            let version = latestRelease.data.tag_name.replace(/^v/i, '');
+            let release = 1
+            if (assets.length === 0) {
+              console.log("No artifacts attached to the latest release. Using tag name as version.");
+            } else {
+              const firstAsset = assets[0]; // Récupère le premier élément de la liste
+              console.log("First artifact attached to the latest release:");
+              console.log(firstAsset);
+              const regex = /([0-9.]{3,})-([0-9]+)/;
+              const match = firstAsset.match(regex);
+              console.log(`Match: ${match}`);
+              release = match ? match[2] : '';
+              if (release !== '') {
+                release = (parseInt(release) + 1).toString();
+              }
+              version = match ? match[1] : '';
+            } 
+            
             core.setOutput("release", release);
             core.setOutput("version", version);
             
