@@ -38,6 +38,8 @@ jobs:
               release = match ? match[2] : '';
               if (release !== '') {
                 release = (parseInt(release) + 1).toString();
+              } else {
+                release = 1
               }
               version = match ? match[1] : '';
             } 
