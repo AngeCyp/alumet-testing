@@ -179,7 +179,7 @@ jobs:
               asset_id: asset.id
             });
           }
-
+          console.log(`Release id: ${id}`);
           core.setOutput("release_id", id);
 
     - name: Upload New Artifacts
@@ -204,12 +204,8 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release_id,
-                name: fileName,
+                name: file,
                 data: fileContent,
-                headers: {
-                  'content-type': 'application/octet-stream',
-                  'content-length': fileContent.length
-                }
               });
 
               console.log(`Uploaded ${fileName}`);
