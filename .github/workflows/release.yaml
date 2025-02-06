@@ -176,14 +176,30 @@ jobs:
           core.setOutput("release_id", id);
 
     - name: Upload New Artifacts
-      if: ${{ github.event_name == 'workflow_dispatch' }}
-      run: |
-        for file in ./rpm/*; do
-          echo "Uploading $file..."
-          gh api \
-            --method POST \
-            --header "Content-Type: $(file -b --mime-type $file)" \
-            --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            --data-binary @$file \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_id }}/assets?name=$(basename $file)"
-        done
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          const release_id = core.getInput('release_id');
+          const directory = './rpm';
+
+          fs.readdirSync(directory).forEach(async file => {
+            const filePath = path.join(directory, file);
+            const fileContent = fs.readFileSync(filePath);
+            const fileName = path.basename(filePath);
+
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release_id,
+              name: fileName,
+              data: fileContent,
+              headers: {
+                'content-type': 'application/octet-stream',
+                'content-length': fileContent.length
+              }
+            });
+
+            console.log(`Uploaded ${fileName}`);
+          });
