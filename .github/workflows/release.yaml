@@ -185,8 +185,11 @@ jobs:
           const directory = './rpm';
 
           fs.readdirSync(directory).forEach(async file => {
+            console.log(`Processing file before: ${file}`);
             const filePath = path.join(directory, file);
+            console.log(`Processing file: ${filePath}`);
             if (fs.lstatSync(filePath).isFile()) {
+              console.log(`Uploading file: ${filePath}`);
               const fileContent = fs.readFileSync(filePath);
               const fileName = path.basename(filePath);
 
