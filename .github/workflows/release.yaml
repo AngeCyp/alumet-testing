@@ -193,7 +193,8 @@ jobs:
 
           fs.readdirSync(directory).forEach(async file => {
             console.log(`Processing file before: ${file}`);
-            const filePath = path.join(directory, file);
+            //const filePath = path.join(directory, file);
+            const filePath = path.resolve(directory, file);
             console.log(`Processing file: ${filePath}`);
             if (fs.lstatSync(filePath).isFile()) {
               console.log(`Uploading file: ${filePath}`);
