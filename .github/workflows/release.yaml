@@ -189,5 +189,5 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release upload ${{ steps.get_latest_release.outputs.release_tag }} rpm/*
+        gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} rpm/*
         
