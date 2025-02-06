@@ -165,6 +165,7 @@ jobs:
           });
 
           let id = latestRelease.data.id;
+          let tag = latestRelease.data.tag_name;
 
           const assets = await github.rest.repos.listReleaseAssets({
             owner: context.repo.owner,
@@ -180,36 +181,11 @@ jobs:
             });
           }
           console.log(`Release id: ${id}`);
+          console.log(`Release tag: ${tag}`);
           core.setOutput("release_id", id);
+          core.setOutput("release_tag", tag);
 
     - name: Upload New Artifacts
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          const path = require('path');
-          const release_id = core.getInput('release_id');
-          const directory = './rpm';
-
-          fs.readdirSync(directory).forEach(async file => {
-            console.log(`Processing file before: ${file}`);
-            //const filePath = path.join(directory, file);
-            const filePath = path.resolve(directory, file);
-            console.log(`Processing file: ${filePath}`);
+      run: |
+        gh release upload ${{ env.release_tag }} rpm/*
         
-            console.log(`Uploading file: ${filePath}`);
-            const fileContent = fs.readFileSync(filePath);
-            const fileName = path.basename(filePath);
-            console.log(`Before API call`);
-            const response = await github.rest.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release_id,
-              name: file,
-              data: fileContent,
-            });
-            
-            console.log(`Response: ${JSON.stringify(response, null, 2)}`);
-
-            console.log(`Uploaded ${fileName}`);
-          });
