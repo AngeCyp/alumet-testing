@@ -127,7 +127,7 @@ jobs:
               else
                 echo "Directory $dir does not exist or is already empty"
               fi
-              mv "$file" "./docs/rpm/$version/$os/$os_version/"
+              mv -f "$file" "./docs/rpm/$version/$os/$os_version/"
             fi
           done
 
