@@ -115,7 +115,7 @@ jobs:
 
       - name: Move RPM files to docs directory
         run: |
-          version=${${{ needs.gather-informations.outputs.version }}:-0.0.0}
+          version=${${{ needs.gather-informations.outputs.version }}}
           echo "Version: $version"
           find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
           find ./docs/rpm -type d -empty -delete
