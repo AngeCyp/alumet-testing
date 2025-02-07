@@ -84,6 +84,8 @@ jobs:
   publish:
     needs: create-rpm
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.gather-informations.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -113,7 +115,7 @@ jobs:
 
       - name: Move RPM files to docs directory
         run: |
-          version=${{ needs.gather-informations.outputs.version }}
+          version=${VERSION:-0.0.0}
           find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
           find ./docs/rpm -type d -empty -delete
           for file in ./docs/rpm/*.rpm; do
