@@ -115,12 +115,20 @@ jobs:
         run: |
           find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
           find ./docs/rpm -type d -empty -delete
+          for file in ./docs/rpm/*.rpm; do
+            if [[ $file =~ alumet-agent-[0-9.]+-([0-9.]+)\.([a-z]+)\.([0-9.]+)\.(x86_64|arm64)\.rpm ]]; then
+              os="${BASH_REMATCH[2]}"
+              version="${BASH_REMATCH[3]}"
+              mkdir -p "./docs/rpm/$os/$version"
+              mv "$file" "./docs/rpm/$os/$version/"
+            fi
+          done
 
       - name: Create repository metadata
         run: |
-          cd docs/rpm
-          createrepo_c .
-          cd ../..
+          for dir in $(find ./docs/rpm -type d -mindepth 2); do
+            echo "$dir"
+          done
 
       - name: Commit and push changes
         run: |
