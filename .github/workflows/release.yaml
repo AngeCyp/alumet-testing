@@ -5,6 +5,10 @@ on:
     types: ["created", "published", "prereleased"]
   workflow_dispatch:
 
+concurrency:
+  group: release-workflow
+  cancel-in-progress: true
+
 jobs:
   gather-informations:
     runs-on: ubuntu-latest
@@ -101,20 +105,19 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout gh-pages || git checkout --orphan gh-pages
           git pull origin gh-pages
-          mkdir -p docs/rpm          
+          mkdir -p docs/rpm 
           
       - name: Download RPM artifact
         uses: actions/download-artifact@v4
         with:
           path: ./docs/rpm
-          pattern: '**/*.rpm' 
+          pattern: '**/*.rpm'
+          merge-multiple: true
 
       - name: Move RPM files to docs directory
         run: |
           version=${{ needs.gather-informations.outputs.version }}
           echo "Version: $version"
-          find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
-          find ./docs/rpm -type d -empty -delete
           for file in ./docs/rpm/*.rpm; do
             if [[ $file =~ alumet-agent-[0-9.]+-([0-9.]+)\.([a-z]+)\.([0-9.]+)\.(x86_64|arm64)\.rpm ]]; then
               os="${BASH_REMATCH[2]}"
