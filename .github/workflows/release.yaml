@@ -82,10 +82,10 @@ jobs:
 
 
   publish:
-    needs: create-rpm
+    needs: 
+      - gather-informations
+      - create-rpm
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.gather-informations.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,7 +115,8 @@ jobs:
 
       - name: Move RPM files to docs directory
         run: |
-          version=${VERSION:-0.0.0}
+          version=${${{ needs.gather-informations.outputs.version }}:-0.0.0}
+          echo "Version: $version"
           find ./docs/rpm -mindepth 2 -type f -exec mv -t ./docs/rpm {} +
           find ./docs/rpm -type d -empty -delete
           for file in ./docs/rpm/*.rpm; do
@@ -123,7 +124,13 @@ jobs:
               os="${BASH_REMATCH[2]}"
               os_version="${BASH_REMATCH[3]}"
               mkdir -p "./docs/rpm/$version/$os/$os_version"
-              rm ./docs/rpm/$version/$os/$os_version/*
+              dir="./docs/rpm/$version/$os/$os_version/"
+              if [ -d "$dir" ] && [ "$(ls -A $dir)" ]; then
+                rm -rf "$dir"/*
+                echo "Emptied the folder $dir"
+              else
+                echo "Directory $dir does not exist or is already empty"
+              fi
               mv "$file" "./docs/rpm/$version/$os/$os_version/"
             fi
           done
