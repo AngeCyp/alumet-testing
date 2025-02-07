@@ -122,15 +122,15 @@ jobs:
             if [[ $file =~ alumet-agent-[0-9.]+-([0-9.]+)\.([a-z]+)\.([0-9.]+)\.(x86_64|arm64)\.rpm ]]; then
               os="${BASH_REMATCH[2]}"
               os_version="${BASH_REMATCH[3]}"
-              mkdir -p "./docs/rpm/$version/$os/$os_version"
-              dir="./docs/rpm/$version/$os/$os_version/"
+              mkdir -p "./docs/rpm/$os/$os_version/$version"
+              dir="./docs/rpm/$os/$os_version/$version/"
               if [ -d "$dir" ] && [ "$(ls -A $dir)" ]; then
                 rm -rf "$dir"/*
                 echo "Emptied the folder $dir"
               else
                 echo "Directory $dir does not exist or is already empty"
               fi
-              mv -f "$file" "./docs/rpm/$version/$os/$os_version/"
+              mv -f "$file" "./docs/rpm/$os/$os_version/$version/"
             fi
           done
 
