@@ -1,9 +1,9 @@
 file:
-  /etc/alumet/alumet-config.tom:
+  /etc/alumet/alumet-config.toml:
     exists: true
   /usr/lib/alumet-agent:
     exists: true
   /usr/bin/alumet-agent:
     exists: true
-  /usr/lib/systemd/system/alumet.service
+  /usr/lib/systemd/system/alumet.service:
     exists: true
