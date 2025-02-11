@@ -1,3 +1,4 @@
+---
 name: "Create the release"
 
 on:
@@ -18,7 +19,7 @@ jobs:
     steps:
       - name: Get Latest Release and List Artifacts
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        id: get_latest_release  
+        id: get_latest_release
         uses: actions/github-script@v6
         with:
           script: |
@@ -26,7 +27,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-  
+
             const assets = latestRelease.data.assets.map(asset => asset.name);
             let version = latestRelease.data.tag_name.replace(/^v/i, '');
             let release = 1
@@ -46,17 +47,17 @@ jobs:
                 release = 1
               }
               version = match ? match[1] : '';
-            } 
-            
+            }
+
             core.setOutput("release", release);
             core.setOutput("version", version);
-            
+
       - name: Echo Artifacts
         run: |
           echo "The tag attached to the latest release are: ${{ steps.get_latest_release.outputs.version }} and the release: ${{ steps.get_latest_release.outputs.release }}"
-      
+
       - name: Checkout Repository
-        if: ${{ steps.get_latest_release.outputs.tag == '' }} 
+        if: ${{ steps.get_latest_release.outputs.tag == '' }}
         uses: actions/checkout@v4
         with:
           fetch-tags: 'true'
@@ -75,7 +76,7 @@ jobs:
             echo "VERSION=$CLEAN_VERSION" >> $GITHUB_OUTPUT
             echo "RELEASE=1" >> $GITHUB_OUTPUT
           fi
-          
+
   create-rpm:
     needs: gather-informations
     uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci/create-rpm-package
@@ -84,9 +85,8 @@ jobs:
       build-version: ${{ needs.gather-informations.outputs.version }}
       release-version: ${{ needs.gather-informations.outputs.release }}
 
-
   publish:
-    needs: 
+    needs:
       - gather-informations
       - create-rpm
     runs-on: ubuntu-latest
@@ -98,15 +98,15 @@ jobs:
 
       - name: Install createrepo
         run: sudo apt-get update && sudo apt-get install -y createrepo-c
-        
+
       - name: Setup gh-pages branch and folder
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout gh-pages || git checkout --orphan gh-pages
           git pull origin gh-pages
-          mkdir -p docs/rpm 
-          
+          mkdir -p docs/rpm
+
       - name: Download RPM artifact
         uses: actions/download-artifact@v4
         with:
@@ -145,72 +145,72 @@ jobs:
           git add docs
           git commit -m "Update RPM repository"
           git push origin gh-pages
-      
+
       - name: Upload static files as artifact
         id: deployment
-        uses: actions/upload-pages-artifact@v3 
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
-      
+
   attach-artifacts:
     needs: create-rpm
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Download RPM artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: '**/*.rpm'
-        path: ./rpm
+      - name: Download RPM artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '**/*.rpm'
+          path: ./rpm
 
-    - name: Release
-      if: ${{ github.event_name != 'workflow_dispatch' }}
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          rpm/**/*.rpm
+      - name: Release
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            rpm/**/*.rpm
 
-    - name: Get Latest Release and Delete Old Artifacts
-      if: ${{ github.event_name == 'workflow_dispatch' }}
-      id: get_latest_release_and_delete_old_artifacts
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const latestRelease = await github.rest.repos.getLatestRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          });
+      - name: Get Latest Release and Delete Old Artifacts
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_latest_release_and_delete_old_artifacts
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const latestRelease = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
 
-          let id = latestRelease.data.id;
-          let tag = latestRelease.data.tag_name;
+            let id = latestRelease.data.id;
+            let tag = latestRelease.data.tag_name;
 
-          const assets = await github.rest.repos.listReleaseAssets({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: id
-          });
-
-          for (const asset of assets.data) {
-            await github.rest.repos.deleteReleaseAsset({
+            const assets = await github.rest.repos.listReleaseAssets({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              asset_id: asset.id
+              release_id: id
             });
-          }
-          console.log(`Release id: ${id}`);
-          console.log(`Release tag: ${tag}`);
-          core.setOutput("release_id", id);
-          core.setOutput("release_tag", tag);
 
-    - name: Upload New Artifacts
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        find rpm -type f -exec gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} {} \;
-  
+            for (const asset of assets.data) {
+              await github.rest.repos.deleteReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: asset.id
+              });
+            }
+            console.log(`Release id: ${id}`);
+            console.log(`Release tag: ${tag}`);
+            core.setOutput("release_id", id);
+            core.setOutput("release_tag", tag);
+
+      - name: Upload New Artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          find rpm -type f -exec gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} {} \;
+
   test-rpm:
     needs: ["attach-artifacts", "create-rpm"]
     runs-on: ubuntu-latest
@@ -218,27 +218,26 @@ jobs:
       image: "registry.access.redhat.com/ubi8/ubi:8.3"
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Download RPM artifact
-      id: download_rpm
-      uses: actions/download-artifact@v4
-      with:
-        pattern: '**/*8.3*.rpm'
-        path: ./rpm
-        merge-multiple: true
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install RPMs
-      run: |
-        rpm -i ${{ steps.download_rpm.outputs.download-path }}/*.rpm
+      - name: Download RPM artifact
+        id: download_rpm
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '**/*8.3*.rpm'
+          path: ./rpm
+          merge-multiple: true
 
-    - name: Install Goss
-      run: |
-        curl -fsSL https://goss.rocks/install | sh
-  
-    - name: Run Goss tests
-      run: |
-        goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
-        cat goss-results.txt >> $GITHUB_STEP_SUMMARY
-    
+      - name: Install RPMs
+        run: |
+          rpm -i ${{ steps.download_rpm.outputs.download-path }}/*.rpm
+
+      - name: Install Goss
+        run: |
+          curl -fsSL https://goss.rocks/install | sh
+
+      - name: Run Goss tests
+        run: |
+          goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
+          cat goss-results.txt >> $GITHUB_STEP_SUMMARY
