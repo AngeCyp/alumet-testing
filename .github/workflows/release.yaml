@@ -85,10 +85,41 @@ jobs:
       build-version: ${{ needs.gather-informations.outputs.version }}
       release-version: ${{ needs.gather-informations.outputs.release }}
 
+  test-rpm:
+    needs: ["gather-informations", "create-rpm"]
+    runs-on: ubuntu-latest
+    container:
+      image: "registry.access.redhat.com/ubi8/ubi:8.3"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download RPM artifact
+        id: download_rpm
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '**/*8.3*.rpm'
+          path: ./rpm
+          merge-multiple: true
+
+      - name: Install RPMs
+        run: |
+          rpm -i ${{ steps.download_rpm.outputs.download-path }}/*.rpm
+
+      - name: Install Goss
+        run: |
+          curl -fsSL https://goss.rocks/install | sh
+
+      - name: Run Goss tests
+        run: |
+          goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
+          cat goss-results.txt >> $GITHUB_STEP_SUMMARY
+
   publish:
     needs:
       - gather-informations
-      - create-rpm
+      - test-rpm
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -153,7 +184,9 @@ jobs:
           path: docs/
 
   attach-artifacts:
-    needs: create-rpm
+    needs:
+      - gather-informations
+      - test-rpm
     runs-on: ubuntu-latest
 
     steps:
@@ -210,34 +243,3 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           find rpm -type f -exec gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} {} \;
-
-  test-rpm:
-    needs: ["attach-artifacts", "create-rpm"]
-    runs-on: ubuntu-latest
-    container:
-      image: "registry.access.redhat.com/ubi8/ubi:8.3"
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download RPM artifact
-        id: download_rpm
-        uses: actions/download-artifact@v4
-        with:
-          pattern: '**/*8.3*.rpm'
-          path: ./rpm
-          merge-multiple: true
-
-      - name: Install RPMs
-        run: |
-          rpm -i ${{ steps.download_rpm.outputs.download-path }}/*.rpm
-
-      - name: Install Goss
-        run: |
-          curl -fsSL https://goss.rocks/install | sh
-
-      - name: Run Goss tests
-        run: |
-          goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
-          cat goss-results.txt >> $GITHUB_STEP_SUMMARY

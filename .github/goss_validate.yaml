@@ -1,4 +1,13 @@
 ---
+package:
+  alumet-agent:
+    installed: true
+
+service:
+  alumet-agent:
+    enabled: false
+    running: false
+
 file:
   /etc/alumet/alumet-config.toml:
     exists: true
