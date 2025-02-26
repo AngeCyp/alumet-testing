@@ -1,9 +1,25 @@
+---
+package:
+  alumet-agent:
+    installed: true
+
+service:
+  alumet-agent:
+    enabled: false
+    running: false
+
 file:
-  /etc/alumet/alumet-config.tom:
+  /etc/alumet/alumet-config.toml:
     exists: true
   /usr/lib/alumet-agent:
     exists: true
   /usr/bin/alumet-agent:
     exists: true
-  /usr/lib/systemd/system/alumet.service
+  /usr/lib/systemd/system/alumet.service:
     exists: true
+
+command:
+  .github/start-alumet.sh:
+    exit-status: 0
+    exec: ".github/start-alumet.sh"
+    stderr: ["/.*Starting Alumet agent 'alumet-agent'.*/"]
