@@ -17,3 +17,9 @@ file:
     exists: true
   /usr/lib/systemd/system/alumet.service:
     exists: true
+
+command:
+  .github/start-alumet.sh:
+    exit-status: 0
+    stdout:
+      - ".*Starting Alumet agent 'alumet-agent'.*"

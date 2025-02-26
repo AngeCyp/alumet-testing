@@ -90,6 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: "registry.access.redhat.com/ubi8/ubi:8.3"
+      options: --cap-add=SYS_NICE --cap-add=PERFMON
 
     steps:
       - name: Checkout repository
