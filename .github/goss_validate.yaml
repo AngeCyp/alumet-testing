@@ -19,7 +19,8 @@ file:
     exists: true
 
 command:
-  .github/start-alumet.sh:
+  'run alumet-agent':
+    exec: "alumet-agent --plugins csv,procfs exec -- sleep 1 && cat alumet-output.csv"
     exit-status: 0
-    stdout:
-      - ".*Starting Alumet agent 'alumet-agent'.*"
+  
+
