@@ -115,7 +115,7 @@ jobs:
       - name: Run Goss tests
         continue-on-error: true
         run: |
-          goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
+          goss -L debug -g .github/goss_validate.yaml validate --format documentation -o verbose > goss-results.txt
           cat goss-results.txt >> $GITHUB_STEP_SUMMARY
           
       - name: Upload artifact local agent
