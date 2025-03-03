@@ -115,6 +115,11 @@ jobs:
       - name: Run Goss tests
         continue-on-error: true
         run: |
+          .github/start-alumet.sh
+          
+      - name: Run Goss tests
+        continue-on-error: true
+        run: |
           goss -L debug -g .github/goss_validate.yaml validate --format documentation -o verbose > goss-results.txt
           cat goss-results.txt >> $GITHUB_STEP_SUMMARY
           
