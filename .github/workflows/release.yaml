@@ -59,6 +59,44 @@ jobs:
       build-version: ${{ needs.gather-informations.outputs.tag }}
       release-version: 1
 
+  test-rpm:
+    needs: ["attach-artifacts", "create-rpm"]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    container:
+      image: "registry.access.redhat.com/ubi8/ubi:8.3"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Download RPM artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '**/*8.3*.rpm'
+        path: ./rpm
+
+    - name: Install RPMs
+      run: |
+        sudo rpm -i ./*.rpm
+
+    - name: Install Goss
+      run: |
+        curl -fsSL https://goss.rocks/install | sh
+  
+    - name: Run Goss tests
+      run: |
+        goss -g .github/goss.yaml validate --format documentation > goss-results.txt
+        cat goss-results.txt >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload artifact local agent
+      uses: actions/upload-artifact@v4
+      with:
+        name: report_goss.txt
+        path: |
+          ./goss-results.txt
+    
+
 
   publish:
     needs: create-rpm
@@ -132,40 +170,3 @@ jobs:
       with:
         files: |
           rpm/**/*.rpm
-  
-  test-rpm:
-    needs: ["attach-artifacts", "create-rpm"]
-    runs-on: ubuntu-latest
-    container:
-      image: "registry.access.redhat.com/ubi8/ubi:8.3"
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Download RPM artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: '**/*8.3*.rpm'
-        path: ./rpm
-
-    - name: Install RPMs
-      run: |
-        sudo rpm -i ./*.rpm
-
-    - name: Install Goss
-      run: |
-        curl -fsSL https://goss.rocks/install | sh
-  
-    - name: Run Goss tests
-      run: |
-        goss -g .github/goss.yaml validate --format documentation > goss-results.txt
-        cat goss-results.txt >> $GITHUB_STEP_SUMMARY
-
-    - name: Upload artifact local agent
-      uses: actions/upload-artifact@v4
-      with:
-        name: report_goss.txt
-        path: |
-          ./goss-results.txt
-    
