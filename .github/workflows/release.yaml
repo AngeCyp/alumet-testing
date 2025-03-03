@@ -108,19 +108,15 @@ jobs:
         run: |
           rpm -i ${{ steps.download_rpm.outputs.download-path }}/*.rpm
 
-      - name: Install Goss
+      - name: Install Goss et procps
         run: |
           curl -fsSL https://goss.rocks/install | sh
-
-      - name: Run Goss tests
-        continue-on-error: true
-        run: |
-          .github/start-alumet.sh
+          apt-get update && apt-get install -y procps
           
       - name: Run Goss tests
         continue-on-error: true
         run: |
-          goss -L debug -g .github/goss_validate.yaml validate --format documentation -o verbose > goss-results.txt
+          goss -g .github/goss_validate.yaml validate --format documentation > goss-results.txt
           cat goss-results.txt >> $GITHUB_STEP_SUMMARY
           
       - name: Upload artifact local agent
