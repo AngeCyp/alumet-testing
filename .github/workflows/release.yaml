@@ -73,16 +73,27 @@ jobs:
 
   create-rpm:
     needs: gather-informations
-    uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@ci/create-rpm-package  # TODO CHANGE !!!
+    uses: alumet-dev/packaging/.github/workflows/build_rpm.yaml@feature/deb-package  # TODO CHANGE !!!
     with:
       target-architecture: x86_64
       build-version: ${{ needs.gather-informations.outputs.version }}
       release-version: ${{ needs.gather-informations.outputs.release }}
       tag: ${{ needs.gather-informations.outputs.tag }}
 
+  create-deb:
+    needs: gather-informations
+    uses: alumet-dev/packaging/.github/workflows/build_deb.yaml@feature/deb-package # TODO CHANGE !!!
+    with:
+      arch: "amd64"
+      name: "alumet"
+      version: 0.8
+      revision: 1
+      urgency: "medium"
+
   attach-artifacts:
     needs:
       - create-rpm
+      - create-deb
     runs-on: ubuntu-latest
 
     steps:
@@ -94,6 +105,12 @@ jobs:
         with:
           pattern: '**/*.rpm'
           path: ./rpm
+      
+      - name: Download RPM artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '**/*.deb'
+          path: ./deb
 
       - name: Release
         if: ${{ github.event_name != 'workflow_dispatch' }}
@@ -101,6 +118,7 @@ jobs:
         with:
           files: |
             rpm/**/*.rpm
+            deb/**/*.deb
 
       - name: Get latest release and delete old artifacts
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -139,3 +157,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           find rpm -type f -exec gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} {} \;
+          find deb -type f -exec gh release upload ${{ steps.get_latest_release_and_delete_old_artifacts.outputs.release_tag }} {} \;
